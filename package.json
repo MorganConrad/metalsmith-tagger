@@ -1,0 +1,31 @@
+{
+  "name": "metalsmith-tagger",
+  "version": "0.1.0",
+  "description": "Tags articles and blog posts",
+  "main": "tagger.js",
+  "scripts": {
+    "test": "nyc --reporter=lcov tape test/test.js",
+    "coverage" : "nyc --reporter=text-lcov report | coveralls"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MorganConrad/metalsmith-tagger.git"
+  },
+  "keywords": [
+    "metalsmith",
+    "plugin",
+    "tags",
+    "cross reference"
+  ],
+  "devDependencies": {
+    "nyc" : "^11.2.0",
+    "tape": "^4.6",
+    "coveralls" : "^3.0"
+  },
+  "author": "Morgan Conrad <flyingspaniel@gmail.com> (http://flyingspaniel.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MorganConrad/metalsmith-tagger/issues"
+  },
+  "homepage": "https://github.com/MorganConrad/metalsmith-tagger#readme"
+}
