@@ -24,19 +24,15 @@ function createFiles() {
 
 // mock done()and metalsmith
 function done(err) { if (err) throw err; }
+var mockMetalsmith = {}
 
-var mockMetalsmith = {
-   _metadata: {},
-   metadata: function() { return this._metadata; }
-}
-
-function basicTest(t, file, foo, bar1) {
-   foo = foo || 'foo';
-   bar1 = bar1 || 'bar1';
-   t.equals(file.tagsMap[foo].length, 2);
-   t.equals(file.tagsMap[bar1].length, 1);
-   t.equals(file.tagsArray[0].count, 2);
-   t.equals(file.tagsArray[4].count, 1);
+function basicTest(t, file, tag) {
+   tag = tag || 'tags';
+   t.equals(file[tag].map.foo.length, 2);
+   t.equals(file[tag].map.bar1.length, 1);
+   t.equals(file[tag].array[0].count, 2);
+   t.equals(file[tag].array[4].count, 1);
+   t.equals(file[tag].count, 6);
 }
 
 
@@ -45,7 +41,6 @@ test('defaults', function(t) {
    tagger() (files, mockMetalsmith, done);
 
    basicTest(t, files['tags_cloud.html']);
-   t.deepEquals(files['tags_cloud.html'], mockMetalsmith._metadata['tags_cloud.html']);
 
    t.deepEquals(files['file1.md'].tags, ['foo', 'bar1', 'baz1']);
    t.end();
@@ -54,14 +49,15 @@ test('defaults', function(t) {
 test('altTagsDelimColon', function(t) {
    var files = createFiles();
    tagger({handle: 'altTagsDelimColon', delimiter: ':'}) (files, mockMetalsmith, done);
-   basicTest(t, files['altTagsDelimColon_cloud.html']);
+   basicTest(t, files['altTagsDelimColon_cloud.html'], 'altTagsDelimColon');
    t.end();
 });
 
 test('altTagsArray', function(t) {
    var files = createFiles();
-   tagger({handle: 'altTagsArray', delimiter: 'xxx'}) (files, mockMetalsmith, done);
-   basicTest(t, files['altTagsArray_cloud.html']);
+   tagger({
+      handle: 'altTagsArray'}) (files, mockMetalsmith, done);
+   basicTest(t, files['altTagsArray_cloud.html'], 'altTagsArray');
    t.end();
 });
 
@@ -70,22 +66,24 @@ test('alternative Paths & cleanHandle', function(t) {
    tagger( { path: "alt_xref", cleanHandle : "cleanHandle" } )
       (files, mockMetalsmith, done);
    basicTest(t, files['alt_xref']);
-   t.deepEquals(files['alt_xref'], mockMetalsmith._metadata['alt_xref']);
    t.deepEquals(files['file1.md'].cleanHandle, ['foo', 'bar1', 'baz1']);
 
    t.end();
 });
 
-test(' add YAML', function(t) {
+test(' add YAML and contentString', function(t) {
    var files = createFiles();
-   tagger( { YAML: { YAML : "xref_YAML" ,
+   tagger( { contentString: "Hello World",
+             YAML: { YAML : "xref_YAML" ,
                      layout: "xref_layout.ms" },
            } )
       (files, mockMetalsmith, done);
-   basicTest(t, files['tags_cloud.html']);
+   var tagFile = files['tags_cloud.html'];
+   basicTest(t, tagFile);
+   t.equals(tagFile.YAML, 'xref_YAML');
+   t.equals(tagFile.layout, 'xref_layout.ms');
+   t.equals(tagFile.contents.toString(), "Hello World");
 
-   t.equals(files['tags_cloud.html'].YAML, 'xref_YAML');
-   t.equals(files['tags_cloud.html'].layout, 'xref_layout.ms');
    t.end();
 })
 
@@ -93,22 +91,50 @@ test('cleanupFn && explicit path', function(t) {
    var files = createFiles();
    var cleanupFn = function(s) { return s.toUpperCase(); };
    tagger( { cleanupFn: cleanupFn, path : "altPath" }) (files, mockMetalsmith, done);
-   basicTest(t, files['altPath'], 'FOO', 'BAZ2');
+   t.equals(files.altPath.tags.map.FOO.length, 2);
+   t.equals(files.altPath.tags.map.BAZ2.length, 1);
    t.end();
 });
 
-test('filefilter & contentString', function(t) {
+
+test('twice', function(t) {
    var files = createFiles();
-   tagger( { fileFilter: '.*html', contentString: "Hello World" }) (files, mockMetalsmith, done);
-   // now only one tag for foo
-   t.equals(files['tags_cloud.html'].tagsMap.foo.length, 1);
-   t.equals(files['tags_cloud.html'].contents.toString(), "Hello World");
+   tagger({ YAML : { y1: 1 }}) (files, mockMetalsmith, done);
+   tagger({YAML : { y1: 2, y3 : 3},  handle: 'altTagsArray', path: 'tags_cloud.html', contentString:""}) (files, mockMetalsmith, done);
+   var tagFile = files['tags_cloud.html'];
+   // console.dir(tagFile, {depth: 99});
+   basicTest(t, tagFile);
+   basicTest(t, tagFile, 'altTagsArray');
+   t.equal(tagFile.handles.length, 2);
+   t.end();
+});
+
+test('postProcess', function(t) {
+   var files = createFiles();
+   tagger({ postProcess: rateTag }) (files, mockMetalsmith, done);
+   var tagFile = files['tags_cloud.html'];
+   // console.dir(tagFile, {depth: 99});
+   basicTest(t, tagFile);
+   t.equals(tagFile.tags.array[0].rating, 1);
+   t.equals(mockMetalsmith.setSomething, "hi");
    t.end();
 })
 
-test('do nada', function(t) {
+
+function rateTag(file, options, files, metalsmith) {
+   var xref = file[options.handle];
+   var topRating = options.topRating || 4;
+   xref.array.forEach(function (x) {
+      x.rating = Math.floor((x.count * topRating) / xref.count);  // should be 1-topRating
+   });
+   metalsmith.setSomething = "hi";
+}
+
+
+test('filefilter', function(t) {
    var files = createFiles();
-   tagger( { path : "." }) (files, mockMetalsmith, done);
-   t.false(files['tags_cloud.html']);
+   tagger( { fileFilter: '.*html' }) (files, mockMetalsmith, done);
+   // now only one tag for foo
+   t.equals(files['tags_cloud.html'].tags.map.foo.length, 1);
    t.end();
 })

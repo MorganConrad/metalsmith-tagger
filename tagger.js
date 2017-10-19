@@ -5,7 +5,6 @@ module.exports = tagger;
    handle: "tags",
    delimiter : ',',
    cleanupFn: function(s) { return s; },
-   //path : "tagger.html",
    YAML : {},
 };
 
@@ -15,51 +14,24 @@ function tagger(options) {
 
    return function(files, metalsmith, done) {
 
-      function buildTagsMap(files) {
-         var tagsMap = {};
-
-         for (var filePath in files) {
-            var fileData = files[filePath];
-
-            if (fileData && options.fileFilter(filePath, fileData, metalsmith)) {
-               var cleanTagsData = parseAndCleanTags(fileData[options.handle], options);
-               if (cleanTagsData.length) {
-                  fileData[options.cleanHandle] = cleanTagsData;
-
-                  cleanTagsData.forEach(function(tag) {
-                     if (tagsMap[tag])
-                        tagsMap[tag].push(filePath);
-                     else
-                        tagsMap[tag] = [filePath];
-                  });
-               }
-            }
-         }
-         return tagsMap;
-      }
-
-
-
       try {
-         var tagsMap = buildTagsMap(files);
-         var tagsArray = mapToSortedArray(tagsMap, options);
-         var contentString = (options.contentString == null) ?  // note ==
-                               JSON.stringify(tagsMap, null, 2) :
-                               options.contentString;
-
-         var tagFile = Object.assign({},
+         var { map, count } = buildTagsMap(files, metalsmith, options);
+         var array = mapToSortedArray(map, options);
+         var file = files[options.path] || { handles: [] };
+         file = Object.assign(file,
                               options.YAML,
                               {
                                  path: options.path,
-                                 tagsMap: tagsMap,
-                                 tagsArray: tagsArray,
-                                 contents: Buffer.from(contentString)
+                                 contents: Buffer.from(options.contentString || "")
                               });
+         file[options.handle] = { map, array, count };
+         file.handles.push(options.handle);
 
-         if (options.path != ".") {
-            files[options.path] = tagFile;
-            metalsmith.metadata()[options.path] = tagFile;
-         }
+         if (options.postProcess)
+            options.postProcess(file, options, files, metalsmith);
+
+         files[options.path] = file;
+
          done();
       }
 
@@ -80,6 +52,32 @@ function parseAndCleanTags(tagData, options) {
    });
 }
 
+
+function buildTagsMap(files, metalsmith, options) {
+   var map = {};
+   var count = 0;
+
+   for (var filePath in files) {
+      var fileData = files[filePath];
+
+      if (fileData && options.fileFilter(filePath, fileData, metalsmith)) {
+         var cleanTagsData = parseAndCleanTags(fileData[options.handle], options);
+         if (cleanTagsData.length) {
+            count += cleanTagsData.length;
+            fileData[options.cleanHandle] = cleanTagsData;
+
+            cleanTagsData.forEach(function(tag) {
+               if (map[tag])
+                  map[tag].push(filePath);
+               else
+                  map[tag] = [filePath];
+            });
+         }
+      }
+   }
+
+   return { map, count };
+};
 
 
 

@@ -37,7 +37,5 @@ jspm_packages
 .node_repl_history
 
 #Parts of Demo
-#temp exclude all of demo
-demo/
 demo/node_modules/
 demo/dist/
