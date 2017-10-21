@@ -9,8 +9,9 @@ A [Metalsmith](http://www.metalsmith.io/) plugin to read tags for your posts, cl
 Similar in goals to [metalsmith-tags](https://www.npmjs.com/package/metalsmith-tags), but,
 instead of building many many static pages for the various tags and links to them, it builds
 a single cross reference file, and places the tags within the file object.  You must followup with your preferred templater.
+A typical followup would be to use server side Javascript to show / hide relevant tags.  
 
-A typical followup would be to use server side Javascript to show / hide relevant tags.  Demo included.
+[Live demo here,](https://morganconrad.github.io/metalsmith-tagger/demo/) and source code included.
 If you wish, you could use the cross reference to create your own static pages.
 
 ## Why?
