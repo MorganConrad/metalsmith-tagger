@@ -7,15 +7,17 @@
 <body>
 
    <header class="mainheader">
+      <link rel="stylesheet" href="/assets/css/tags.css">
    </header>
 
    <main>
    <h1>Tag Cloud</h1>
 
+   Click on an author or album...
+   <br><br>
 
    <h2>Authors</h2>
-   <br><br>
-   <div>
+   <div class="tags tag-cloud">
       <span><a href="/posts.html">All</a></span>
       {{#author}}
          {{#array}}
@@ -23,10 +25,10 @@
          {{/array}}
       {{/author}}
    </div>
-
+   <br><br><br>
    <h2>Albums</h2>
-   <br><br>
-   <div>
+   <br>
+   <div class="tags tag-cloud">
       <span><a href="/posts.html">All</a></span>
       {{#album}}
          {{#array}}
