@@ -1,0 +1,28 @@
+
+.tags {
+   font-size: 80%;
+   color: slategray;
+   padding: 5px;
+   display: inline-block;
+}
+
+.tags span {
+   display: inline-block;
+   padding: 5px;
+   border: 1px solid #ddd;
+}
+
+
+.tag-cloud {
+   font-size: 100%;
+}
+
+.tag-cloud span {
+   padding: 10px;
+   margin: 10px;
+   border: 2px solid teal;
+}
+
+h1, h2, h3 {
+   margin-top: 0;
+}
