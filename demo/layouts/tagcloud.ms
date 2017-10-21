@@ -7,7 +7,7 @@
 <body>
 
    <header class="mainheader">
-      <link rel="stylesheet" href="/assets/css/tags.css">
+      <link rel="stylesheet" href="assets/css/tags.css">
    </header>
 
    <main>
@@ -18,10 +18,10 @@
 
    <h2>Authors</h2>
    <div class="tags tag-cloud">
-      <span><a href="/posts.html">All</a></span>
+      <span><a href="posts.html">All</a></span>
       {{#author}}
          {{#array}}
-          <span><a href="/posts.html?author={{id}}">{{id}} ( {{count}} )</a></span>
+          <span><a href="posts.html?author={{id}}">{{id}} ( {{count}} )</a></span>
          {{/array}}
       {{/author}}
    </div>
@@ -29,10 +29,10 @@
    <h2>Albums</h2>
    <br>
    <div class="tags tag-cloud">
-      <span><a href="/posts.html">All</a></span>
+      <span><a href="posts.html">All</a></span>
       {{#album}}
          {{#array}}
-          <span><a href="/posts.html?album={{id}}">{{id}} ( {{count}} )</a></span>
+          <span><a href="posts.html?album={{id}}">{{id}} ( {{count}} )</a></span>
          {{/array}}
       {{/album}}
    </div>
